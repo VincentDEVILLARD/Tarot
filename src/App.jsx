@@ -97,8 +97,8 @@ function App() {
   const mod = (n, m) => ((n % m) + m) % m;
 
   // Pour les flèches coverflow (icônes)
-  const arrowLeft = <img src="/back.png" alt="Précédent" style={{ width: 32, height: 32, filter: 'drop-shadow(0 1px 2px #0004)', transform: 'none' }} />;
-  const arrowRight = <img src="/back.png" alt="Suivant" style={{ width: 32, height: 32, filter: 'drop-shadow(0 1px 2px #0004)', transform: 'scaleX(-1)' }} />;
+  const arrowLeft = <img src="/Tarot/back.png" alt="Précédent" style={{ width: 32, height: 32, filter: 'drop-shadow(0 1px 2px #0004)', transform: 'none' }} />;
+  const arrowRight = <img src="/Tarot/back.png" alt="Suivant" style={{ width: 32, height: 32, filter: 'drop-shadow(0 1px 2px #0004)', transform: 'scaleX(-1)' }} />;
 
   // CoverflowCarousel simple (3 cartes visibles, infini, carte centrale = TiltedCard, ratio tarot)
   const CoverflowCarousel = () => {
@@ -164,7 +164,7 @@ function App() {
           }}
         >
           <img
-            src="/exit.png"
+            src="/Tarot/exit.png"
             alt="Close"
             style={{ width: 22, height: 22, opacity: 0.82, filter: 'drop-shadow(0 1px 2px #0004)' }}
           />
@@ -231,7 +231,7 @@ function App() {
           }}>
             {/* Chevron gauche */}
             <img
-              src="/back.png"
+              src="/Tarot/back.png"
               alt="chevron gauche"
               style={{
                 position: 'absolute',
@@ -271,7 +271,7 @@ function App() {
             />
             {/* Chevron droite */}
             <img
-              src="/back.png"
+              src="/Tarot/back.png"
               alt="chevron droite"
               style={{
                 position: 'absolute',
@@ -442,7 +442,7 @@ function App() {
               }}
             >
               <img
-                src="/exit.png"
+                src="/Tarot/exit.png"
                 alt="Close"
                 style={{ width: 24, height: 24, opacity: 0.62, filter: 'drop-shadow(0 1px 2px #0004)' }}
               />
@@ -648,7 +648,7 @@ function App() {
                 }}
               >
                 <img
-                  src="/exit.png"
+                  src="/Tarot/exit.png"
                   alt="Back to carousel"
                   style={{ height: 20, width: 'auto', opacity: 0.82, filter: 'drop-shadow(0 1px 2px #0002)' }}
                 />
@@ -803,7 +803,7 @@ function App() {
                 }}
               >
                 <img
-                  src="/exit.png"
+                  src="/Tarot/exit.png"
                   alt="Exit"
                   style={{ height: 20, width: 'auto', opacity: 0.82, filter: 'drop-shadow(0 1px 2px #0002)' }}
                 />
@@ -1033,7 +1033,7 @@ function App() {
           }}
         >
           <img
-            src="/reload.png"
+            src="/Tarot/reload.png"
             alt="Reload"
             style={{ width: 32, height: 32, opacity: 0.62, filter: 'drop-shadow(0 1px 2px #0004)' }}
           />
@@ -1087,7 +1087,7 @@ function App() {
           }}
         >
           <img
-            src="/back.png"
+            src="/Tarot/back.png"
             alt="Back"
             style={{ height: 32, width: 'auto', opacity: 0.82, filter: 'drop-shadow(0 1px 2px #0002)' }}
           />
@@ -1291,7 +1291,7 @@ function App() {
                 }}
               >
                 <img
-                  src="/exit.png"
+                  src="/Tarot/exit.png"
                   alt="Back to coverflow"
                   style={{ height: 20, width: 'auto', opacity: 0.82, filter: 'drop-shadow(0 1px 2px #0002)' }}
                 />
@@ -1372,7 +1372,7 @@ function App() {
           }}
         >
           <img
-            src="/list.png"
+            src="/Tarot/list.png"
             alt="List"
             style={{ width: 32, height: 32, opacity: 0.62, filter: 'drop-shadow(0 1px 2px #0004)' }}
           />
