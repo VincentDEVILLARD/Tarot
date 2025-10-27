@@ -20,6 +20,8 @@
   transform-origin: 50% 50%;
   -webkit-transform-origin: 50% 50%;
   font-family: 'LEMON MILK', Arial, sans-serif;
+  text-transform: uppercase;
+  font-weight: 900;
 }
 
 .circular-text span {
@@ -32,4 +34,6 @@
   font-size: 24px;
   transition: all 0.5s cubic-bezier(0, 0, 0, 1);
   font-family: 'LEMON MILK', Arial, sans-serif;
+  text-transform: uppercase;
+  font-weight: 900;
 } 

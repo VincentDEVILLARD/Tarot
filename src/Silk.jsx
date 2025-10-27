@@ -3,6 +3,10 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { forwardRef, useRef, useMemo, useLayoutEffect } from "react";
 import { Color } from "three";
 
+/*
+  Animated silk-like background using a custom shader and Three.js.
+  I wanted something subtle and organic to make the app feel alive.
+*/
 const hexToNormalizedRGB = (hex) => {
   hex = hex.replace("#", "");
   return [

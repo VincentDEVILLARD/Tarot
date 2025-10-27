@@ -2,11 +2,18 @@ import { useRef, useState } from "react";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import "./TiltedCard.css";
 
+// Spring config for the tilt/scale effect
 const springValues = {
   damping: 30,
   stiffness: 100,
   mass: 2,
 };
+
+// Ajout d'un utilitaire pour détecter le mobile
+function isMobileDevice() {
+  if (typeof window === 'undefined') return false;
+  return /Mobi|Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(window.navigator.userAgent);
+}
 
 export default function TiltedCard({
   imageSrc,
@@ -23,6 +30,8 @@ export default function TiltedCard({
   overlayContent = null,
   displayOverlayContent = false,
   onClick,
+  imageStyle = {},
+  overflow = 'visible',
 }) {
   const ref = useRef(null);
   const x = useMotionValue();
@@ -37,7 +46,10 @@ export default function TiltedCard({
     mass: 1,
   });
   const [lastY, setLastY] = useState(0);
+  const isMobile = isMobileDevice();
+
   function handleMouse(e) {
+    if (isMobile) return; // Désactive l'effet tilt sur mobile
     if (!ref.current) return;
     const rect = ref.current.getBoundingClientRect();
     const offsetX = e.clientX - rect.left - rect.width / 2;
@@ -53,15 +65,21 @@ export default function TiltedCard({
     setLastY(offsetY);
   }
   function handleMouseEnter() {
+    if (isMobile) return;
     scale.set(scaleOnHover);
     opacity.set(1);
   }
   function handleMouseLeave() {
+    if (isMobile) return;
     opacity.set(0);
     scale.set(1);
     rotateX.set(0);
     rotateY.set(0);
     rotateFigcaption.set(0);
+  }
+  // Gestion du tap sur mobile
+  function handleTouchEnd(e) {
+    if (onClick) onClick(e);
   }
   return (
     <figure
@@ -71,18 +89,21 @@ export default function TiltedCard({
         height: containerHeight,
         width: containerWidth,
         cursor: onClick ? 'pointer' : undefined,
+        overflow,
       }}
       onMouseMove={handleMouse}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       onClick={onClick}
+      onTouchEnd={isMobile ? handleTouchEnd : undefined}
       tabIndex={onClick ? 0 : undefined}
       role={onClick ? 'button' : undefined}
       aria-pressed={onClick ? false : undefined}
     >
-      {showMobileWarning && (
+      {/* Suppression de l'alerte mobile si mobile */}
+      {showMobileWarning && !isMobile && (
         <div className="tilted-card-mobile-alert">
-          This effect is not optimized for mobile. Check on desktop.
+          Not really made for mobile—try it on desktop for the full effect.
         </div>
       )}
       <motion.div
@@ -90,9 +111,9 @@ export default function TiltedCard({
         style={{
           width: imageWidth,
           height: imageHeight,
-          rotateX,
-          rotateY,
-          scale,
+          rotateX: isMobile ? 0 : rotateX,
+          rotateY: isMobile ? 0 : rotateY,
+          scale: isMobile ? 1 : scale,
         }}
       >
         <motion.img
@@ -102,6 +123,8 @@ export default function TiltedCard({
           style={{
             width: imageWidth,
             height: imageHeight,
+            objectFit: 'contain',
+            ...imageStyle,
           }}
         />
         {displayOverlayContent && overlayContent && (
@@ -112,7 +135,8 @@ export default function TiltedCard({
           </motion.div>
         )}
       </motion.div>
-      {showTooltip && (
+      {/* Tooltip désactivé sur mobile */}
+      {showTooltip && !isMobile && (
         <motion.figcaption
           className="tilted-card-caption"
           style={{

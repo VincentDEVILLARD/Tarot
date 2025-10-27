@@ -26,28 +26,58 @@
   }
 }
 
+@media (max-width: 700px) {
+  .tilted-card-figure {
+    box-shadow: 0 2px 12px #0003;
+    border-radius: 16px;
+    overflow: hidden;
+    padding: 0 !important;
+    background: rgba(30,40,60,0.08);
+    /* Pas d'effet tilt ni de hover sur mobile */
+  }
+  .tilted-card-inner {
+    transform: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+  .tilted-card-img {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    height: auto !important;
+    object-fit: contain;
+  }
+  .tilted-card-caption {
+    display: none !important;
+  }
+  .tilted-card-mobile-alert {
+    display: none !important;
+  }
+}
+
 .tilted-card-inner {
   position: relative;
   transform-style: preserve-3d;
+}
+
+/* Suppression de l'effet de lumière/reflet */
+.tilted-card-inner::before {
+  display: none !important;
+}
+
+@media (max-width: 700px) {
+  .tilted-card-inner::before {
+    display: none !important;
+  }
 }
 
 .tilted-card-img {
   position: absolute;
   top: 0;
   left: 0;
-  object-fit: cover;
   border-radius: 15px;
   will-change: transform;
   transform: translateZ(0);
-}
-
-.tilted-card-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 2;
-  will-change: transform;
-  transform: translateZ(30px);
 }
 
 .tilted-card-caption {
@@ -57,7 +87,7 @@
   top: 0;
   border-radius: 4px;
   background-color: #fff;
-  padding: 0;
+  padding: 4px 10px;
   font-size: 10px;
   color: #2d2d2d;
   opacity: 0;

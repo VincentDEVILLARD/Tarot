@@ -1,35 +1,16 @@
 import Silk from './Silk';
 import CircularText from './CircularText';
 import TiltedCard from './TiltedCard';
+import tarotMajors from './tarotMajorsData';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import html2canvas from 'html2canvas';
+import { useCallback } from 'react';
 
 function App() {
-  // Liste des 22 arcanes majeurs
-  const tarotMajors = [
-    { num: 0, name: 'Le Mat', adj: 'Libre', img: 'https://placehold.co/400x640/222/fff?text=Le+Mat' },
-    { num: 1, name: 'Le Bateleur', adj: 'Créatif', img: 'https://placehold.co/400x640/333/fff?text=Le+Bateleur' },
-    { num: 2, name: 'La Papesse', adj: 'Intuitive', img: 'https://placehold.co/400x640/444/fff?text=La+Papesse' },
-    { num: 3, name: 'L’Impératrice', adj: 'Fertile', img: 'https://placehold.co/400x640/555/fff?text=L%E2%80%99Imp%C3%A9ratrice' },
-    { num: 4, name: 'L’Empereur', adj: 'Stable', img: 'https://placehold.co/400x640/666/fff?text=L%E2%80%99Empereur' },
-    { num: 5, name: 'Le Pape', adj: 'Sage', img: 'https://placehold.co/400x640/777/fff?text=Le+Pape' },
-    { num: 6, name: 'L’Amoureux', adj: 'Passionné', img: 'https://placehold.co/400x640/888/fff?text=L%E2%80%99Amoureux' },
-    { num: 7, name: 'Le Chariot', adj: 'Victorieux', img: 'https://placehold.co/400x640/999/fff?text=Le+Chariot' },
-    { num: 8, name: 'La Justice', adj: 'Équitable', img: 'https://placehold.co/400x640/aaa/fff?text=La+Justice' },
-    { num: 9, name: 'L’Hermite', adj: 'Réfléchi', img: 'https://placehold.co/400x640/bbb/fff?text=L%E2%80%99Hermite' },
-    { num: 10, name: 'La Roue de Fortune', adj: 'Changeant', img: 'https://placehold.co/400x640/ccc/fff?text=La+Roue+de+Fortune' },
-    { num: 11, name: 'La Force', adj: 'Courageux', img: 'https://placehold.co/400x640/ddd/fff?text=La+Force' },
-    { num: 12, name: 'Le Pendu', adj: 'Suspendu', img: 'https://placehold.co/400x640/eee/fff?text=Le+Pendu' },
-    { num: 13, name: 'L’Arcane sans nom', adj: 'Transformateur', img: 'https://placehold.co/400x640/111/fff?text=Arcane+XIII' },
-    { num: 14, name: 'Tempérance', adj: 'Harmonieux', img: 'https://placehold.co/400x640/222/fff?text=Temp%C3%A9rance' },
-    { num: 15, name: 'Le Diable', adj: 'Instinctif', img: 'https://placehold.co/400x640/333/fff?text=Le+Diable' },
-    { num: 16, name: 'La Maison Dieu', adj: 'Brutal', img: 'https://placehold.co/400x640/444/fff?text=La+Maison+Dieu' },
-    { num: 17, name: 'L’Étoile', adj: 'Inspirant', img: 'https://placehold.co/400x640/555/fff?text=L%E2%80%99%C3%89toile' },
-    { num: 18, name: 'La Lune', adj: 'Mystérieux', img: 'https://placehold.co/400x640/666/fff?text=La+Lune' },
-    { num: 19, name: 'Le Soleil', adj: 'Rayonnant', img: 'https://placehold.co/400x640/777/fff?text=Le+Soleil' },
-    { num: 20, name: 'Le Jugement', adj: 'Révélateur', img: 'https://placehold.co/400x640/888/fff?text=Le+Jugement' },
-    { num: 21, name: 'Le Monde', adj: 'Accompli', img: 'https://placehold.co/400x640/999/fff?text=Le+Monde' },
-  ];
+  const navigate = useNavigate();
   const [cards, setCards] = useState([]);
   const [showCircle, setShowCircle] = useState(true);
   const [showCards, setShowCards] = useState(false);
@@ -39,17 +20,57 @@ function App() {
   const [showCarousel, setShowCarousel] = useState(false);
   const [selectedCarouselCard, setSelectedCarouselCard] = useState(null);
   const [carouselOpenedFromDraw, setCarouselOpenedFromDraw] = useState(false);
-  // Coverflow 3D states
   const [showCoverflow, setShowCoverflow] = useState(false);
   const [coverflowIndex, setCoverflowIndex] = useState(0);
   const [selectedCoverflowCard, setSelectedCoverflowCard] = useState(null);
-  // Pour revenir à l'état précédent après le coverflow
-  const [previousScreen, setPreviousScreen] = useState(null); // 'home' | 'draw'
-  // Taille des cartes coverflow (ratio 80/112)
-  const COVERFLOW_MAIN_W = 340;
-  const COVERFLOW_MAIN_H = 476;
-  const COVERFLOW_SIDE_W = 180;
-  const COVERFLOW_SIDE_H = 252;
+  const [previousScreen, setPreviousScreen] = useState(null); // 'home' or 'draw'
+  const COVERFLOW_MAIN_W = 374;
+  const COVERFLOW_MAIN_H = 524;
+  const COVERFLOW_SIDE_W = 198;
+  const COVERFLOW_SIDE_H = 277;
+  const [shareFeedback, setShareFeedback] = useState(false);
+  const shareTimeoutRef = useRef();
+  const silkThemes = [
+    { name: 'Blue', color: '#0a9bca' },
+    { name: 'Violet', color: '#7B7481' },
+    { name: 'Green', color: '#40ffaa' },
+    { name: 'Pink', color: '#e86eb7' },
+    { name: 'Gold', color: '#e6c96b' },
+    { name: 'Black', color: '#222b38' },
+  ];
+  const [silkColor, setSilkColor] = useState(() => {
+    return localStorage.getItem('silkColor') || silkThemes[0].color;
+  });
+  const [showThemePicker, setShowThemePicker] = useState(false);
+  const [showCrossOfLife, setShowCrossOfLife] = useState(false);
+  const [crossCards, setCrossCards] = useState([]);
+  const [crossVisibleCards, setCrossVisibleCards] = useState(0);
+  const [crossHasDrawn, setCrossHasDrawn] = useState(false);
+  const shareRef = useRef();
+
+  function handleCrossDraw() {
+    const shuffled = tarotMajors.slice().sort(() => 0.5 - Math.random());
+    setCrossCards(shuffled.slice(0, 10));
+    setCrossVisibleCards(0);
+    setTimeout(() => {
+      setCrossHasDrawn(true);
+      // Animation d'apparition progressive
+      for (let i = 1; i <= 10; i++) {
+        setTimeout(() => setCrossVisibleCards(i), 200 * i);
+      }
+    }, 500);
+  }
+  function handleCrossReload() {
+    setCrossHasDrawn(false);
+    setCrossVisibleCards(0);
+    setTimeout(() => handleCrossDraw(), 400);
+  }
+  function handleBackToMain() {
+    setShowCrossOfLife(false);
+    setCrossHasDrawn(false);
+    setCrossVisibleCards(0);
+    setCrossCards([]);
+  }
 
   const handleDraw = () => {
     const shuffled = tarotMajors.slice().sort(() => 0.5 - Math.random());
@@ -59,14 +80,12 @@ function App() {
     setTimeout(() => {
       setShowCards(true);
       setHasDrawn(true);
-      // Affichage séquentiel des cartes (plus lent)
-      setTimeout(() => setVisibleCards(1), 500);   // Past
-      setTimeout(() => setVisibleCards(2), 1200);  // Present
-      setTimeout(() => setVisibleCards(3), 2000);  // Future
+      setTimeout(() => setVisibleCards(1), 1000);   // Past
+      setTimeout(() => setVisibleCards(2), 2000);  // Present
+      setTimeout(() => setVisibleCards(3), 3000);  // Future
     }, 700);
   };
 
-  // Nouveau tirage (reload)
   const handleReloadDraw = () => {
     setShowCards(false);
     setTimeout(() => {
@@ -74,13 +93,12 @@ function App() {
       setCards(shuffled.slice(0, 3));
       setVisibleCards(0);
       setShowCards(true);
-      setTimeout(() => setVisibleCards(1), 500);
-      setTimeout(() => setVisibleCards(2), 1200);
-      setTimeout(() => setVisibleCards(3), 2000);
+      setTimeout(() => setVisibleCards(1), 1000);
+      setTimeout(() => setVisibleCards(2), 2000);
+      setTimeout(() => setVisibleCards(3), 3000);
     }, 700);
   };
 
-  // Handler for back button (reset to initial state)
   const handleBackToCircle = () => {
     setShowCircle(true);
     setShowCards(false);
@@ -89,18 +107,13 @@ function App() {
     setCards([]);
   };
 
-  // Placeholder descriptions for each card
-  const getCardDescription = (card) =>
-    card ? `La carte « ${card.name} » symbolise ${card.adj?.toLowerCase() || 'un aspect mystérieux'} de votre parcours.` : '';
+  const getCardDescription = (card) => card ? card.desc : '';
 
-  // Helper pour coverflow infini
   const mod = (n, m) => ((n % m) + m) % m;
 
-  // Pour les flèches coverflow (icônes)
-  const arrowLeft = <img src="/Tarot/back.png" alt="Précédent" style={{ width: 32, height: 32, filter: 'drop-shadow(0 1px 2px #0004)', transform: 'none' }} />;
-  const arrowRight = <img src="/Tarot/back.png" alt="Suivant" style={{ width: 32, height: 32, filter: 'drop-shadow(0 1px 2px #0004)', transform: 'scaleX(-1)' }} />;
+  const arrowLeft = <img src="/Tarot/back.png" alt="Previous" style={{ width: 32, height: 32, filter: 'drop-shadow(0 1px 2px #0004)', transform: 'none' }} />;
+  const arrowRight = <img src="/Tarot/back.png" alt="Next" style={{ width: 32, height: 32, filter: 'drop-shadow(0 1px 2px #0004)', transform: 'scaleX(-1)' }} />;
 
-  // CoverflowCarousel simple (3 cartes visibles, infini, carte centrale = TiltedCard, ratio tarot)
   const CoverflowCarousel = () => {
     const prevIdx = mod(coverflowIndex - 1, tarotMajors.length);
     const nextIdx = mod(coverflowIndex + 1, tarotMajors.length);
@@ -120,14 +133,13 @@ function App() {
         overflow: 'hidden',
         pointerEvents: 'auto',
       }}>
-        {/* Exit button */}
         <button
           onClick={() => {
             setShowCoverflow(false);
             if (previousScreen === 'draw') setShowCards(true);
             if (previousScreen === 'home') setShowCircle(true);
           }}
-          aria-label="Fermer le coverflow"
+          aria-label="Close coverflow"
           style={{
             position: 'absolute',
             top: '3vh',
@@ -169,7 +181,6 @@ function App() {
             style={{ width: 22, height: 22, opacity: 0.82, filter: 'drop-shadow(0 1px 2px #0004)' }}
           />
         </button>
-        {/* Coverflow cards (3 visibles, ratio tarot) */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
@@ -180,159 +191,108 @@ function App() {
           position: 'relative',
           zIndex: 105,
         }}>
-          {/* Précédente */}
           <div
             style={{
               width: `${COVERFLOW_SIDE_W}px`,
               height: `${COVERFLOW_SIDE_H}px`,
-              aspectRatio: '80/112',
-              opacity: 0.7,
-              filter: 'blur(0.5px) grayscale(0.2)',
-              transform: 'rotateY(-18deg) scale(1)',
-              borderRadius: '18px',
-              boxShadow: '0 2px 12px #0006',
-              background: 'rgba(30,40,60,0.10)',
-              border: '1px solid rgba(255,255,255,0.10)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              transition: 'all 0.22s cubic-bezier(0.4,0,0.2,1)',
-              overflow: 'hidden',
+              transition: 'opacity 0.22s, transform 0.18s',
+              overflow: 'visible',
+              background: 'none',
+              border: 'none',
+              boxShadow: 'none',
+              borderRadius: 0,
+              pointerEvents: 'auto',
+              position: 'relative',
+              opacity: 0.7,
+              filter: 'blur(0.5px) grayscale(0.2)',
+              transform: 'scale(0.92)',
             }}
             onClick={() => setCoverflowIndex(prevIdx)}
-            onMouseEnter={e => {
-              e.currentTarget.style.opacity = 1;
-              e.currentTarget.style.filter = 'none';
-              e.currentTarget.style.transform = 'rotateY(-18deg) scale(1.08)';
-              e.currentTarget.style.boxShadow = '0 6px 24px #40ffaa55, 0 2px 8px #4079ff55';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.opacity = 0.7;
-              e.currentTarget.style.filter = 'blur(0.5px) grayscale(0.2)';
-              e.currentTarget.style.transform = 'rotateY(-18deg) scale(1)';
-              e.currentTarget.style.boxShadow = '0 2px 12px #0006';
-            }}
           >
             <img
               src={tarotMajors[prevIdx].img}
               alt={tarotMajors[prevIdx].name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', pointerEvents: 'none' }}
             />
           </div>
-          {/* Centrale = TiltedCard géant, fond glass, ratio tarot */}
-          <div style={{
-            position: 'relative',
-            width: `${COVERFLOW_MAIN_W}px`,
-            height: `${COVERFLOW_MAIN_H}px`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            {/* Chevron gauche */}
-            <img
-              src="/Tarot/back.png"
-              alt="chevron gauche"
-              style={{
-                position: 'absolute',
-                left: '-38px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: 28,
-                height: 28,
-                opacity: 0.18,
-                pointerEvents: 'none',
-                userSelect: 'none',
-                filter: 'drop-shadow(0 1px 2px #0002)',
-              }}
-            />
-            <TiltedCard
-              imageSrc={tarotMajors[coverflowIndex].img}
-              altText={tarotMajors[coverflowIndex].name}
-              captionText={tarotMajors[coverflowIndex].name}
-              containerHeight="100%"
-              containerWidth="100%"
-              imageHeight="100%"
-              imageWidth="100%"
-              scaleOnHover={1.15}
-              rotateAmplitude={18}
-              showMobileWarning={false}
-              showTooltip={false}
-              displayOverlayContent={false}
-              style={{
-                borderRadius: '22px',
-                boxShadow: '0 4px 24px #0008',
-                background: 'rgba(30,40,60,0.10)',
-                border: '2px solid rgba(255,255,255,0.18)',
-                cursor: 'pointer',
-                margin: '0 2vw',
-              }}
-              onClick={() => setSelectedCoverflowCard(tarotMajors[coverflowIndex])}
-            />
-            {/* Chevron droite */}
-            <img
-              src="/Tarot/back.png"
-              alt="chevron droite"
-              style={{
-                position: 'absolute',
-                right: '-38px',
-                top: '50%',
-                transform: 'translateY(-50%) scaleX(-1)',
-                width: 28,
-                height: 28,
-                opacity: 0.18,
-                pointerEvents: 'none',
-                userSelect: 'none',
-                filter: 'drop-shadow(0 1px 2px #0002)',
-              }}
-            />
-          </div>
-          {/* Suivante */}
           <div
             style={{
-              width: `${COVERFLOW_SIDE_W}px`,
-              height: `${COVERFLOW_SIDE_H}px`,
-              aspectRatio: '80/112',
-              opacity: 0.7,
-              filter: 'blur(0.5px) grayscale(0.2)',
-              transform: 'rotateY(18deg) scale(1)',
-              borderRadius: '18px',
-              boxShadow: '0 2px 12px #0006',
-              background: 'rgba(30,40,60,0.10)',
-              border: '1px solid rgba(255,255,255,0.10)',
+              width: `${COVERFLOW_MAIN_W}px`,
+              height: `${COVERFLOW_MAIN_H}px`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
-              transition: 'all 0.22s cubic-bezier(0.4,0,0.2,1)',
-              overflow: 'hidden',
+              transition: 'transform 0.18s',
+              zIndex: 2,
+              position: 'relative',
+            }}
+            onClick={() => setSelectedCoverflowCard(tarotMajors[coverflowIndex])}
+          >
+            <TiltedCard
+              imageSrc={tarotMajors[coverflowIndex].img}
+              altText={tarotMajors[coverflowIndex].name}
+              containerHeight="100%"
+              containerWidth="100%"
+              imageHeight="100%"
+              imageWidth="100%"
+              imageStyle={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              showMobileWarning={false}
+              showTooltip={false}
+              displayOverlayContent={false}
+              overflow="visible"
+              scaleOnHover={1.5}
+            />
+          </div>
+          <div
+            style={{
+              width: `${COVERFLOW_SIDE_W}px`,
+              height: `${COVERFLOW_SIDE_H}px`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'opacity 0.22s, transform 0.18s',
+              overflow: 'visible',
+              background: 'none',
+              border: 'none',
+              boxShadow: 'none',
+              borderRadius: 0,
+              pointerEvents: 'auto',
+              position: 'relative',
+              opacity: 0.7,
+              filter: 'blur(0.5px) grayscale(0.2)',
+              transform: 'scale(0.92)',
             }}
             onClick={() => setCoverflowIndex(nextIdx)}
-            onMouseEnter={e => {
-              e.currentTarget.style.opacity = 1;
-              e.currentTarget.style.filter = 'none';
-              e.currentTarget.style.transform = 'rotateY(18deg) scale(1.08)';
-              e.currentTarget.style.boxShadow = '0 6px 24px #40ffaa55, 0 2px 8px #4079ff55';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.opacity = 0.7;
-              e.currentTarget.style.filter = 'blur(0.5px) grayscale(0.2)';
-              e.currentTarget.style.transform = 'rotateY(18deg) scale(1)';
-              e.currentTarget.style.boxShadow = '0 2px 12px #0006';
-            }}
           >
             <img
               src={tarotMajors[nextIdx].img}
               alt={tarotMajors[nextIdx].name}
-              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '16px' }}
+              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', pointerEvents: 'none' }}
             />
           </div>
+        </div>
+        <div style={{
+          marginTop: 18,
+          textAlign: 'center',
+          fontSize: '1.01rem',
+          color: 'rgba(255,255,255,0.38)',
+          letterSpacing: '0.02em',
+          fontWeight: 500,
+          textShadow: '0 1px 4px #0006',
+          userSelect: 'none',
+        }}>
+          scroll with arrows ← or →
         </div>
       </div>
     );
   };
 
-  // Coverflow: keyboard navigation
   useEffect(() => {
     if (!showCoverflow) return;
     const handleKey = (e) => {
@@ -348,7 +308,6 @@ function App() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [showCoverflow, tarotMajors.length, previousScreen]);
 
-  // Style pour le halo/glow circulaire au hover
   const arrowBtnBase = {
     position: 'fixed',
     top: '50%',
@@ -369,9 +328,25 @@ function App() {
     userSelect: 'none',
   };
 
+  const handleShareDraw = useCallback(() => {
+    if (cards.length !== 3) return;
+    const node = shareRef.current;
+    if (!node) return;
+    html2canvas(node, { backgroundColor: null, scale: 2 }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = 'tirage-tarot.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      setShareFeedback(true);
+      clearTimeout(shareTimeoutRef.current);
+      shareTimeoutRef.current = setTimeout(() => setShareFeedback(false), 1800);
+    });
+  }, [cards]);
+
   return (
     <div style={{width:'100vw',height:'100vh',margin:0,padding:0,overflow:'hidden',position:'relative',fontFamily:"'LEMON MILK', Arial, sans-serif"}}>
-      <Silk speed={7} scale={1} color="#0a9bca" noiseIntensity={1} rotation={0} />
+      <Silk key={silkColor} speed={7} scale={1} color={silkColor} noiseIntensity={1} rotation={0} />
+      {/* SÉLECTEUR DE THÈME SILK */}
       {/* CARROUSEL DES CARTES */}
       <AnimatePresence>
         {showCarousel && (
@@ -520,166 +495,9 @@ function App() {
         )}
       </AnimatePresence>
       
-      {/* FICHE CARTE (mode focus) - pour carrousel aussi */}
+      {/* FICHE CARTE (mode focus) mutualisée */}
       <AnimatePresence>
-        {selectedCarouselCard && (
-          <motion.div
-            key="carousel-card-focus"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.32 }}
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 50,
-              background: 'rgba(10,16,24,0.25)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              pointerEvents: 'auto',
-            }}
-          >
-            {/* Carte statique à gauche */}
-            <motion.div
-              initial={{ x: 0, opacity: 0 }}
-              animate={{ x: '-7vw', opacity: 1 }}
-              exit={{ x: 0, opacity: 0 }}
-              transition={{ duration: 0.44, type: 'spring', bounce: 0.18 }}
-              style={{
-                width: 'min(32vw, 400px)',
-                aspectRatio: '80/112',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'rgba(30,40,60,0.10)',
-                borderRadius: '22px',
-                boxShadow: '0 4px 32px #0003',
-                marginRight: '4vw',
-                marginLeft: '2vw',
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <img
-                src={selectedCarouselCard.img}
-                alt={selectedCarouselCard.name}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '18px',
-                  boxShadow: '0 2px 12px #0002',
-                  background: '#222',
-                }}
-              />
-            </motion.div>
-            {/* Fenêtre d'info à droite */}
-            <motion.div
-              initial={{ x: 60, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 60, opacity: 0 }}
-              transition={{ duration: 0.44, type: 'spring', bounce: 0.18, delay: 0.08 }}
-              style={{
-                flex: 1,
-                maxWidth: 'min(48vw, 600px)',
-                minWidth: '260px',
-                background: 'rgba(30,40,60,0.25)',
-                borderRadius: '22px',
-                boxShadow: '0 8px 48px #0003, 0 2px 16px rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                padding: '38px 36px 32px 32px',
-                marginRight: '2vw',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                justifyContent: 'center',
-                position: 'relative',
-                color: '#fff',
-                fontFamily: "'LEMON MILK', Arial, sans-serif",
-              }}
-            >
-              {/* Bouton croix - retour au carrousel */}
-              <button
-                onClick={() => setSelectedCarouselCard(null)}
-                aria-label="Retour au carrousel"
-                style={{
-                  position: 'absolute',
-                  top: 18,
-                  right: 18,
-                  width: 36,
-                  height: 36,
-                  border: 'none',
-                  background: 'rgba(30,40,60,0.01)',
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                  boxShadow: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.22s, box-shadow 0.22s, border 0.22s, transform 0.18s, opacity 0.22s',
-                  border: '1.5px solid rgba(255,255,255,0.06)',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  zIndex: 2,
-                  opacity: 0.48,
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'linear-gradient(90deg, #40ffaa33 0%, #4079ff33 100%)';
-                  e.currentTarget.style.boxShadow = '0 4px 24px #40ffaa88, 0 2px 8px #4079ff88, 0 2px 8px #0002';
-                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.07)';
-                  e.currentTarget.style.border = '1.5px solid #40ffaa88';
-                  e.currentTarget.style.opacity = 1;
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(30,40,60,0.01)';
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.border = '1.5px solid rgba(255,255,255,0.06)';
-                  e.currentTarget.style.opacity = 0.48;
-                }}
-              >
-                <img
-                  src="/Tarot/exit.png"
-                  alt="Back to carousel"
-                  style={{ height: 20, width: 'auto', opacity: 0.82, filter: 'drop-shadow(0 1px 2px #0002)' }}
-                />
-              </button>
-              <div style={{
-                fontSize: '2.1rem',
-                fontWeight: 900,
-                marginBottom: '18px',
-                letterSpacing: '0.04em',
-                color: '#fff',
-                textShadow: '0 2px 8px #0006',
-              }}>{selectedCarouselCard.name}</div>
-              <div style={{
-                fontSize: '1.18rem',
-                lineHeight: 1.6,
-                color: '#e6f6ff',
-                opacity: 0.92,
-                fontWeight: 400,
-                marginBottom: '8px',
-                textShadow: '0 1px 4px #0003',
-              }}>
-                {getCardDescription(selectedCarouselCard)}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      
-      {/* FICHE CARTE (mode focus) */}
-      <AnimatePresence>
-        {selectedCardIdx !== null && cards[selectedCardIdx] && (
+        {(selectedCardIdx !== null && cards[selectedCardIdx]) || selectedCoverflowCard ? (
           <motion.div
             key="card-focus"
             initial={{ opacity: 0 }}
@@ -687,7 +505,7 @@ function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.32 }}
             style={{
-              position: 'absolute',
+              position: 'fixed',
               top: 0,
               left: 0,
               width: '100vw',
@@ -696,75 +514,67 @@ function App() {
               flexDirection: 'row',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 50,
-              background: 'rgba(10,16,24,0.12)',
+              zIndex: 200,
+              background: 'rgba(10,16,24,0.25)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
               pointerEvents: 'auto',
             }}
           >
-            {/* Carte statique à gauche */}
-            <motion.div
-              initial={{ x: 0, opacity: 0 }}
-              animate={{ x: '-7vw', opacity: 1 }}
-              exit={{ x: 0, opacity: 0 }}
-              transition={{ duration: 0.44, type: 'spring', bounce: 0.18 }}
-              style={{
-                width: 'min(32vw, 400px)',
-                aspectRatio: '80/112',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'rgba(30,40,60,0.10)',
-                borderRadius: '22px',
-                boxShadow: '0 4px 32px #0003',
-                marginRight: '4vw',
-                marginLeft: '2vw',
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <img
-                src={cards[selectedCardIdx].img}
-                alt={cards[selectedCardIdx].name}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '18px',
-                  boxShadow: '0 2px 12px #0002',
-                  background: '#222',
-                }}
+            {/* Carte focus à gauche */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              overflow: 'visible',
+              marginRight: '4vw',
+              marginLeft: '2vw',
+              width: 'min(32vw, 400px)',
+              aspectRatio: '80/112',
+              height: 'min(52vh, 600px)',
+            }}>
+              <TiltedCard
+                imageSrc={selectedCardIdx !== null ? cards[selectedCardIdx].img : selectedCoverflowCard?.img}
+                altText={selectedCardIdx !== null ? cards[selectedCardIdx].name : selectedCoverflowCard?.name}
+                containerHeight="100%"
+                containerWidth="100%"
+                imageHeight="100%"
+                imageWidth="100%"
+                imageStyle={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                showMobileWarning={false}
+                showTooltip={false}
+                displayOverlayContent={false}
+                overflow="visible"
               />
-            </motion.div>
+            </div>
             {/* Fenêtre d'info à droite */}
-            <motion.div
-              initial={{ x: 60, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 60, opacity: 0 }}
-              transition={{ duration: 0.44, type: 'spring', bounce: 0.18, delay: 0.08 }}
-              style={{
-                flex: 1,
-                maxWidth: 'min(48vw, 600px)',
-                minWidth: '260px',
-                background: 'rgba(30,40,60,0.25)',
-                borderRadius: '22px',
-                boxShadow: '0 8px 48px #0003, 0 2px 16px rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                padding: '38px 36px 32px 32px',
-                marginRight: '2vw',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                justifyContent: 'center',
-                position: 'relative',
-                color: '#fff',
-                fontFamily: "'LEMON MILK', Arial, sans-serif",
-              }}
-            >
-              {/* Bouton croix */}
+            <div style={{
+              flex: 1,
+              maxWidth: 'min(48vw, 600px)',
+              minWidth: '260px',
+              background: 'rgba(30,40,60,0.25)',
+              borderRadius: '22px',
+              boxShadow: '0 8px 48px #0003, 0 2px 16px rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              padding: '38px 36px 32px 32px',
+              marginRight: '2vw',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              justifyContent: 'center',
+              position: 'relative',
+              color: '#fff',
+              fontFamily: "'LEMON MILK', Arial, sans-serif",
+            }}>
+              {/* Bouton croix - retour */}
               <button
-                onClick={() => setSelectedCardIdx(null)}
+                onClick={() => {
+                  if (selectedCardIdx !== null) setSelectedCardIdx(null);
+                  else setSelectedCoverflowCard(null);
+                }}
                 aria-label="Fermer la fiche"
                 style={{
                   position: 'absolute',
@@ -815,7 +625,7 @@ function App() {
                 letterSpacing: '0.04em',
                 color: '#fff',
                 textShadow: '0 2px 8px #0006',
-              }}>{cards[selectedCardIdx].name}</div>
+              }}>{selectedCardIdx !== null ? cards[selectedCardIdx].name : selectedCoverflowCard?.name}</div>
               <div style={{
                 fontSize: '1.18rem',
                 lineHeight: 1.6,
@@ -825,11 +635,11 @@ function App() {
                 marginBottom: '8px',
                 textShadow: '0 1px 4px #0003',
               }}>
-                {getCardDescription(cards[selectedCardIdx])}
+                {getCardDescription(selectedCardIdx !== null ? cards[selectedCardIdx] : selectedCoverflowCard)}
               </div>
-            </motion.div>
+            </div>
           </motion.div>
-        )}
+        ) : null}
       </AnimatePresence>
       
       {/* TIRAGE NORMAL */}
@@ -846,6 +656,35 @@ function App() {
           justifyContent:'center',
           zIndex:10
         }}>
+         {/* Zone invisible pour la capture PNG */}
+         <div ref={shareRef} style={{
+           position: 'absolute',
+           left: '-9999px',
+           top: 0,
+           width: 800,
+           height: 400,
+           background: 'linear-gradient(120deg, #0a9bca 0%, #40ffaa 100%)',
+           borderRadius: 32,
+           boxShadow: '0 8px 48px #0003',
+           display: showCards && cards.length === 3 ? 'flex' : 'none',
+           flexDirection: 'column',
+           alignItems: 'center',
+           justifyContent: 'center',
+           padding: 32,
+           color: '#fff',
+           fontFamily: "'LEMON MILK', Arial, sans-serif",
+         }}>
+           <div style={{ display: 'flex', gap: 32, marginBottom: 24 }}>
+             {cards.map((card, idx) => (
+               <div key={card.name} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                 <img src={card.img} alt={card.name} style={{ width: 120, height: 180, borderRadius: 16, boxShadow: '0 4px 16px #0006', marginBottom: 12, objectFit: 'cover' }} />
+                 <div style={{ fontWeight: 900, fontSize: 20, marginBottom: 4 }}>{card.name}</div>
+                 <div style={{ fontSize: 14, opacity: 0.85, textAlign: 'center', maxWidth: 120 }}>{card.desc.split('.')[0]}.</div>
+               </div>
+             ))}
+           </div>
+           <div style={{ fontSize: 18, fontWeight: 700, opacity: 0.8 }}>Tarot Spread - Past / Present / Future</div>
+         </div>
           <AnimatePresence>
             {showCircle && (
               <motion.div
@@ -913,75 +752,63 @@ function App() {
                         pointerEvents: 'auto',
                       }}
                     >
-                      <div style={{
-                        width: 'min(30.8vw, 374px)', // +10% plus large
-                        aspectRatio: '80/112', // Ratio tarot de Marseille
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}>
-                          <TiltedCard
-                            imageSrc={cards[idx]?.img}
-                            altText={cards[idx]?.name}
-                            captionText={cards[idx]?.name}
-                            containerHeight="100%"
-                            containerWidth="100%"
-                            imageHeight="100%"
-                            imageWidth="100%"
-                            scaleOnHover={1.5}
-                            rotateAmplitude={20}
-                            showMobileWarning={false}
-                            showTooltip={false}
-                            displayOverlayContent={true}
-                            overlayContent={
-                              <div style={{
+                      <AnimatePresence initial={false}>
+                        {visibleCards > idx && (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.7 }}
+                            style={{ width: 'min(30.8vw, 374px)', height: 'calc(min(30.8vw, 374px) * 1.6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                          >
+                            <TiltedCard
+                              imageSrc={cards[idx]?.img}
+                              altText={cards[idx]?.name}
+                              captionText={cards[idx]?.name}
+                              containerHeight="100%"
+                              containerWidth="100%"
+                              imageHeight="100%"
+                              imageWidth="100%"
+                              scaleOnHover={1.5}
+                              rotateAmplitude={20}
+                              showMobileWarning={false}
+                              showTooltip={false}
+                              imageStyle={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                              style={{
+                                opacity: visibleCards > idx ? 1 : 0,
+                                transition: 'opacity 0.7s cubic-bezier(0.4,0,0.2,1)',
                                 width: '100%',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'flex-start',
-                                height: '100%',
-                                pointerEvents: 'none',
-                                paddingTop: 0,
-                              }}>
-                                <span style={{
-                                  fontFamily: "'LEMON MILK', Arial, sans-serif",
-                                  fontWeight: 900,
-                                  fontSize: '1.1rem',
-                                  color: '#fff',
-                                  letterSpacing: '0.06em',
-                                  background: 'rgba(255,255,255,0.18)',
-                                  borderRadius: '12px',
-                                  padding: '7px 18px',
-                                  boxShadow: '0 2px 8px 0 #0001',
-                                  border: '1.5px solid rgba(255,255,255,0.32)',
-                                  backdropFilter: 'blur(8px)',
-                                  WebkitBackdropFilter: 'blur(8px)',
-                                  opacity: 0.98,
-                                  textShadow: 'none',
-                                }}>{cards[idx]?.num} — {cards[idx]?.name}</span>
-                              </div>
-                            }
+                                height: '100%'
+                              }}
+                              onClick={() => setSelectedCardIdx(idx)}
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                      <AnimatePresence initial={false}>
+                        {visibleCards > idx && (
+                          <motion.div
+                            key={'label-' + idx}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.7, delay: 0.1 }}
                             style={{
-                              opacity: visibleCards > idx ? 1 : 0,
-                              transition: 'opacity 0.7s cubic-bezier(0.4,0,0.2,1)',
-                              width: '100%',
-                              height: '100%'
-                            }}
-                            onClick={() => setSelectedCardIdx(idx)}
-                          />
-                      </div>
-                      <div style={{
-                        marginTop: '18px',
-                        color: '#fff',
-                        fontFamily: "'LEMON MILK', Arial, sans-serif",
-                        fontWeight: 'bold',
-                        fontSize: '1.15rem',
-                        letterSpacing: '0.1em',
-                        textAlign: 'center',
-                        textShadow: '0 2px 8px #0008',
-                        userSelect: 'none',
-                        lineHeight: 1.1,
-                      }}>{label}</div>
+                              marginTop: '18px',
+                              color: '#fff',
+                              fontFamily: "'LEMON MILK', Arial, sans-serif",
+                              fontWeight: 900,
+                              fontSize: '1.15rem',
+                              letterSpacing: '0.1em',
+                              textAlign: 'center',
+                              textShadow: '0 2px 8px #0008',
+                              userSelect: 'none',
+                              lineHeight: 1.1,
+                              textTransform: 'uppercase',
+                            }}>{label}</motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   ))}
                 </div>
@@ -992,6 +819,7 @@ function App() {
       )}
       {/* BOUTON RELOAD FLOTTANT EN BAS À DROITE */}
       {showCards && cards.length === 3 && selectedCarouselCard === null && !showCarousel && !showCoverflow && (
+        <>
         <button
           onClick={handleReloadDraw}
           aria-label="Reload"
@@ -1025,7 +853,7 @@ function App() {
             e.currentTarget.style.textShadow = '0 2px 12px #40ffaa88, 0 1px 0 #fff2';
           }}
           onMouseLeave={e => {
-            e.currentTarget.style.background = 'rgba(30,40,60,0.10)'; // ou tu peux mettre un bleu/vert très doux si tu veux un fond plus coloré même au repos
+            e.currentTarget.style.background = 'rgba(30,40,60,0.10)';
             e.currentTarget.style.boxShadow = '0 2px 8px #0002';
             e.currentTarget.style.transform = 'none';
             e.currentTarget.style.border = '1.5px solid rgba(255,255,255,0.22)';
@@ -1038,8 +866,80 @@ function App() {
             style={{ width: 32, height: 32, opacity: 0.62, filter: 'drop-shadow(0 1px 2px #0004)' }}
           />
         </button>
+        {/* BOUTON PARTAGE */}
+        <button
+          onClick={handleShareDraw}
+          aria-label="Partager le tirage"
+          style={{
+            position: 'fixed',
+            right: '3vw',
+            bottom: '11.5vh',
+            zIndex: 30,
+            background: 'rgba(30,40,60,0.10)',
+            border: '1.5px solid rgba(255,255,255,0.22)',
+            borderRadius: '50%',
+            width: '54px',
+            height: '54px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 2px 8px #0002',
+            cursor: 'pointer',
+            transition: 'background 0.22s, box-shadow 0.22s, border 0.22s, transform 0.18s',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            outline: 'none',
+            padding: 0,
+            userSelect: 'none',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'linear-gradient(90deg, #40ffaa66 0%, #4079ff66 100%)';
+            e.currentTarget.style.boxShadow = '0 4px 24px #40ffaa88, 0 2px 8px #4079ff88, 0 2px 8px #0002';
+            e.currentTarget.style.transform = 'translateY(-2px) scale(1.07)';
+            e.currentTarget.style.border = '1.5px solid #40ffaa88';
+            e.currentTarget.style.textShadow = '0 2px 12px #40ffaa88, 0 1px 0 #fff2';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(30,40,60,0.10)';
+            e.currentTarget.style.boxShadow = '0 2px 8px #0002';
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.border = '1.5px solid rgba(255,255,255,0.22)';
+            e.currentTarget.style.textShadow = 'none';
+          }}
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#40ffaa" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </button>
+        {/* Feedback visuel de partage */}
+        <AnimatePresence>
+          {shareFeedback && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.5 }}
+              style={{
+                position: 'fixed',
+                right: '3vw',
+                bottom: '19vh',
+                zIndex: 40,
+                background: 'linear-gradient(90deg, #40ffaa33 0%, #4079ff33 100%)',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '1.05rem',
+                padding: '12px 22px',
+                borderRadius: '18px',
+                boxShadow: '0 2px 8px #0002',
+                userSelect: 'none',
+                pointerEvents: 'none',
+                textShadow: '0 2px 8px #40ffaa88',
+              }}
+            >
+              Tirage téléchargé !
+            </motion.div>
+          )}
+        </AnimatePresence>
+        </>
       )}
-
       {/* BOUTON BACK FLOTTANT EN HAUT À DROITE */}
       {showCards && cards.length === 3 && selectedCarouselCard === null && !showCarousel && !showCoverflow && (
         <button
@@ -1163,162 +1063,6 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
-      {/* FICHE CARTE depuis coverflow */}
-      <AnimatePresence>
-        {selectedCoverflowCard && (
-          <motion.div
-            key="coverflow-card-focus"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.32 }}
-            style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              width: '100vw',
-              height: '100vh',
-              display: 'flex',
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 200,
-              background: 'rgba(10,16,24,0.25)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-              pointerEvents: 'auto',
-            }}
-          >
-            {/* Carte statique à gauche */}
-            <motion.div
-              initial={{ x: 0, opacity: 0 }}
-              animate={{ x: '-7vw', opacity: 1 }}
-              exit={{ x: 0, opacity: 0 }}
-              transition={{ duration: 0.44, type: 'spring', bounce: 0.18 }}
-              style={{
-                width: 'min(32vw, 400px)',
-                aspectRatio: '80/112',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: 'rgba(30,40,60,0.10)',
-                borderRadius: '22px',
-                boxShadow: '0 4px 32px #0003',
-                marginRight: '4vw',
-                marginLeft: '2vw',
-                position: 'relative',
-                overflow: 'hidden',
-              }}
-            >
-              <img
-                src={selectedCoverflowCard.img}
-                alt={selectedCoverflowCard.name}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '18px',
-                  boxShadow: '0 2px 12px #0002',
-                  background: '#222',
-                }}
-              />
-            </motion.div>
-            {/* Fenêtre d'info à droite */}
-            <motion.div
-              initial={{ x: 60, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 60, opacity: 0 }}
-              transition={{ duration: 0.44, type: 'spring', bounce: 0.18, delay: 0.08 }}
-              style={{
-                flex: 1,
-                maxWidth: 'min(48vw, 600px)',
-                minWidth: '260px',
-                background: 'rgba(30,40,60,0.25)',
-                borderRadius: '22px',
-                boxShadow: '0 8px 48px #0003, 0 2px 16px rgba(255,255,255,0.08)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                padding: '38px 36px 32px 32px',
-                marginRight: '2vw',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'flex-start',
-                justifyContent: 'center',
-                position: 'relative',
-                color: '#fff',
-                fontFamily: "'LEMON MILK', Arial, sans-serif",
-              }}
-            >
-              {/* Bouton croix - retour au coverflow */}
-              <button
-                onClick={() => setSelectedCoverflowCard(null)}
-                aria-label="Retour au coverflow"
-                style={{
-                  position: 'absolute',
-                  top: 18,
-                  right: 18,
-                  width: 36,
-                  height: 36,
-                  border: 'none',
-                  background: 'rgba(30,40,60,0.01)',
-                  borderRadius: '50%',
-                  cursor: 'pointer',
-                  boxShadow: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.22s, box-shadow 0.22s, border 0.22s, transform 0.18s, opacity 0.22s',
-                  border: '1.5px solid rgba(255,255,255,0.06)',
-                  backdropFilter: 'blur(8px)',
-                  WebkitBackdropFilter: 'blur(8px)',
-                  zIndex: 2,
-                  opacity: 0.48,
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.background = 'linear-gradient(90deg, #40ffaa33 0%, #4079ff33 100%)';
-                  e.currentTarget.style.boxShadow = '0 4px 24px #40ffaa88, 0 2px 8px #4079ff88, 0 2px 8px #0002';
-                  e.currentTarget.style.transform = 'translateY(-2px) scale(1.07)';
-                  e.currentTarget.style.border = '1.5px solid #40ffaa88';
-                  e.currentTarget.style.opacity = 1;
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'rgba(30,40,60,0.01)';
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.transform = 'none';
-                  e.currentTarget.style.border = '1.5px solid rgba(255,255,255,0.06)';
-                  e.currentTarget.style.opacity = 0.48;
-                }}
-              >
-                <img
-                  src="/Tarot/exit.png"
-                  alt="Back to coverflow"
-                  style={{ height: 20, width: 'auto', opacity: 0.82, filter: 'drop-shadow(0 1px 2px #0002)' }}
-                />
-              </button>
-              <div style={{
-                fontSize: '2.1rem',
-                fontWeight: 900,
-                marginBottom: '18px',
-                letterSpacing: '0.04em',
-                color: '#fff',
-                textShadow: '0 2px 8px #0006',
-              }}>{selectedCoverflowCard.name}</div>
-              <div style={{
-                fontSize: '1.18rem',
-                lineHeight: 1.6,
-                color: '#e6f6ff',
-                opacity: 0.92,
-                fontWeight: 400,
-                marginBottom: '8px',
-                textShadow: '0 1px 4px #0003',
-              }}>
-                {getCardDescription(selectedCoverflowCard)}
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
       {/* BOUTON LIST FLOTTANT EN HAUT À DROITE */}
       {!showCoverflow && (
         <button
@@ -1378,7 +1122,387 @@ function App() {
           />
         </button>
       )}
+      {/* SÉLECTEUR DE THÈME SILK - déplacé sous le bouton list, plus discret */}
+      {!showCoverflow && (
+        <div style={{ position: 'fixed', right: '3vw', top: 'calc(3vh + 62px)', zIndex: 29 }}>
+          <button
+            aria-label="Changer le thème de fond"
+            onClick={() => setShowThemePicker(v => !v)}
+            style={{
+              background: 'rgba(30,40,60,0.04)',
+              border: '1.5px solid rgba(255,255,255,0.10)',
+              borderRadius: '50%',
+              width: '54px',
+              height: '54px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: 'none',
+              cursor: 'pointer',
+              transition: 'background 0.22s, box-shadow 0.22s, border 0.22s, transform 0.18s',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              outline: 'none',
+              padding: 0,
+              userSelect: 'none',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'linear-gradient(90deg, #40ffaa22 0%, #4079ff22 100%)';
+              e.currentTarget.style.boxShadow = '0 2px 8px #40ffaa33';
+              e.currentTarget.style.border = '1.5px solid #40ffaa33';
+              e.currentTarget.style.opacity = 0.7;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(30,40,60,0.04)';
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.border = '1.5px solid rgba(255,255,255,0.10)';
+              e.currentTarget.style.opacity = 0.38;
+            }}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#40ffaa" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10A15.3 15.3 0 0 1 12 2z"/></svg>
+          </button>
+          {showThemePicker && (
+            <div style={{
+              position: 'absolute',
+              top: '58px',
+              right: 0,
+              background: 'rgba(30,40,60,0.95)',
+              border: '1.5px solid rgba(255,255,255,0.18)',
+              borderRadius: '18px',
+              boxShadow: '0 4px 24px #0006',
+              padding: '18px 22px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '18px',
+              zIndex: 100,
+              alignItems: 'center',
+              minWidth: 260,
+            }}>
+              <div style={{ fontWeight: 700, color: '#fff', fontSize: '1.08rem', marginBottom: 8 }}>Pick a color</div>
+              <GradientColorPicker
+                onPick={color => {
+                  setSilkColor(color);
+                  localStorage.setItem('silkColor', color);
+                  setShowThemePicker(false);
+                }}
+                height={38}
+                width={220}
+              />
+              <div style={{marginTop: 8, fontSize: '0.98rem', color: '#fff8', fontWeight: 400, letterSpacing: '0.02em'}}>Current: <span style={{background: silkColor, borderRadius: 8, padding: '2px 12px', color: '#222', fontWeight: 700, marginLeft: 6}}>{silkColor}</span></div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* BOUTON ACCÈS CROIX DE VIE (navigue vers /croix) */}
+      {showCards && cards.length === 3 && selectedCarouselCard === null && !showCarousel && !showCoverflow && !showCrossOfLife && (
+        <button
+          onClick={() => navigate('/croix')}
+          aria-label="Celtic Cross spread"
+          style={{
+            position: 'fixed',
+            left: '3vw',
+            bottom: 'calc(3vh + 64px)',
+            zIndex: 30,
+            background: 'rgba(30,40,60,0.10)',
+            border: '1.5px solid rgba(255,255,255,0.22)',
+            borderRadius: '50%',
+            width: '54px',
+            height: '54px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 2px 8px #0002',
+            cursor: 'pointer',
+            transition: 'background 0.22s, box-shadow 0.22s, border 0.22s, transform 0.18s',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            outline: 'none',
+            padding: 0,
+            userSelect: 'none',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'linear-gradient(90deg, #40ffaa66 0%, #4079ff66 100%)';
+            e.currentTarget.style.boxShadow = '0 4px 24px #40ffaa88, 0 2px 8px #4079ff88, 0 2px 8px #0002';
+            e.currentTarget.style.transform = 'translateY(-2px) scale(1.07)';
+            e.currentTarget.style.border = '1.5px solid #40ffaa88';
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'rgba(30,40,60,0.10)';
+            e.currentTarget.style.boxShadow = '0 2px 8px #0002';
+            e.currentTarget.style.transform = 'none';
+            e.currentTarget.style.border = '1.5px solid rgba(255,255,255,0.22)';
+          }}
+        >
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#40ffaa" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="2"/><rect x="11" y="3" width="2" height="18"/></svg>
+        </button>
+      )}
+
+      {/* PAGE CROIX DE VIE */}
+      {showCrossOfLife && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100,
+          background: 'none',
+        }}>
+          {/* Bouton retour */}
+          <button
+            onClick={handleBackToMain}
+            aria-label="Retour à l'accueil"
+            style={{
+              position: 'fixed',
+              left: '3vw',
+              top: '3vh',
+              zIndex: 110,
+              background: 'rgba(30,40,60,0.01)',
+              border: '1.5px solid rgba(255,255,255,0.06)',
+              borderRadius: '32px',
+              minWidth: '54px',
+              height: '44px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: 'none',
+              cursor: 'pointer',
+              transition: 'background 0.22s, box-shadow 0.22s, border 0.22s, transform 0.18s, opacity 0.22s',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              outline: 'none',
+              padding: '0 16px 0 10px',
+              userSelect: 'none',
+              opacity: 0.32,
+              gap: '7px',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'linear-gradient(90deg, #40ffaa33 0%, #4079ff33 100%)';
+              e.currentTarget.style.boxShadow = '0 4px 24px #40ffaa88, 0 2px 8px #4079ff88, 0 2px 8px #0002';
+              e.currentTarget.style.transform = 'translateY(-2px) scale(1.07)';
+              e.currentTarget.style.border = '1.5px solid #40ffaa88';
+              e.currentTarget.style.textShadow = '0 2px 12px #40ffaa88, 0 1px 0 #fff2';
+              e.currentTarget.style.opacity = 1;
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(30,40,60,0.01)';
+              e.currentTarget.style.boxShadow = 'none';
+              e.currentTarget.style.transform = 'none';
+              e.currentTarget.style.border = '1.5px solid rgba(255,255,255,0.06)';
+              e.currentTarget.style.textShadow = 'none';
+              e.currentTarget.style.opacity = 0.32;
+            }}
+          >
+            <img
+              src="/Tarot/back.png"
+              alt="Back"
+              style={{ height: 32, width: 'auto', opacity: 0.82, filter: 'drop-shadow(0 1px 2px #0002)' }}
+            />
+            <span style={{
+              fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, Arial, sans-serif',
+              fontWeight: 400,
+              fontSize: '1.08rem',
+              color: 'rgba(255,255,255,0.38)',
+              letterSpacing: '0.01em',
+              marginLeft: '2px',
+              opacity: 0.82,
+              userSelect: 'none',
+              transition: 'color 0.22s, text-shadow 0.22s',
+              fontStyle: 'normal',
+              textShadow: 'none',
+            }}>
+              back
+            </span>
+          </button>
+          {/* Titre et bouton tirage */}
+          <div style={{ marginTop: '7vh', marginBottom: '2vh', color: '#fff', fontWeight: 900, fontSize: '2.1rem', letterSpacing: '0.04em', textShadow: '0 2px 8px #0006' }}>
+            Celtic Cross
+          </div>
+          {!crossHasDrawn && (
+            <button
+              onClick={handleCrossDraw}
+              style={{
+                background: 'linear-gradient(90deg, #40ffaa33 0%, #4079ff33 100%)',
+                color: '#fff',
+                fontWeight: 700,
+                fontSize: '1.15rem',
+                border: 'none',
+                borderRadius: '16px',
+                padding: '18px 38px',
+                margin: '2vh 0',
+                boxShadow: '0 2px 8px #0002',
+                cursor: 'pointer',
+                transition: 'background 0.22s, box-shadow 0.22s, transform 0.18s',
+                outline: 'none',
+                userSelect: 'none',
+              }}
+            >
+              Start the spread
+            </button>
+          )}
+          {/* Layout croix de vie (squelette, à améliorer) */}
+          {crossHasDrawn && (
+            <div style={{
+              width: 'min(90vw, 900px)',
+              height: 'min(80vh, 700px)',
+              position: 'relative',
+              margin: '0 auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              {/* Disposition croix de vie : 10 cartes, à placer selon le schéma */}
+              {/* TODO: Améliorer le layout pour respecter la croix de vie */}
+              {[...Array(10)].map((_, i) => (
+                <div key={i} style={{
+                  position: 'absolute',
+                  ...getCrossOfLifeCardPosition(i),
+                  opacity: crossVisibleCards > i ? 1 : 0,
+                  transition: 'opacity 0.7s cubic-bezier(0.4,0,0.2,1)',
+                }}>
+                  <TiltedCard
+                    imageSrc={crossCards[i]?.img}
+                    altText={crossCards[i]?.name}
+                    captionText={crossCards[i]?.name}
+                    containerHeight="110px"
+                    containerWidth="70px"
+                    imageHeight="110px"
+                    imageWidth="70px"
+                    scaleOnHover={1.2}
+                    rotateAmplitude={10}
+                    showMobileWarning={false}
+                    showTooltip={true}
+                    imageStyle={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Bouton reload croix de vie */}
+          {crossHasDrawn && (
+            <button
+              onClick={handleCrossReload}
+              aria-label="Recommencer le tirage"
+              style={{
+                position: 'fixed',
+                right: '3vw',
+                bottom: '3vh',
+                zIndex: 130,
+                background: 'rgba(30,40,60,0.10)',
+                border: '1.5px solid rgba(255,255,255,0.22)',
+                borderRadius: '50%',
+                width: '54px',
+                height: '54px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px #0002',
+                cursor: 'pointer',
+                transition: 'background 0.22s, box-shadow 0.22s, border 0.22s, transform 0.18s',
+                backdropFilter: 'blur(8px)',
+                WebkitBackdropFilter: 'blur(8px)',
+                outline: 'none',
+                padding: 0,
+                userSelect: 'none',
+              }}
+            >
+              <img
+                src="/Tarot/reload.png"
+                alt="Reload"
+                style={{ width: 32, height: 32, opacity: 0.62, filter: 'drop-shadow(0 1px 2px #0004)' }}
+              />
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
+
+function GradientColorPicker({ onPick, width = 220, height = 38 }) {
+  const canvasRef = useRef();
+  const [previewColor, setPreviewColor] = useState(null);
+  // Draw the gradient on mount
+  useEffect(() => {
+    const ctx = canvasRef.current.getContext('2d');
+    const grad = ctx.createLinearGradient(0, 0, width, 0);
+    grad.addColorStop(0, '#7be6b1'); // greenish retro
+    grad.addColorStop(0.08, '#fff7c3');
+    grad.addColorStop(0.18, '#ffd37a');
+    grad.addColorStop(0.32, '#ffb15a');
+    grad.addColorStop(0.48, '#ff6a2c');
+    grad.addColorStop(0.62, '#b91c1c');
+    grad.addColorStop(0.75, '#0d2323');
+    grad.addColorStop(0.92, '#7B7481'); // retro violet
+    grad.addColorStop(1, '#b18be6'); // violet/retro
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, width, height);
+    ctx.strokeStyle = '#fff8';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, width, height);
+  }, [width, height]);
+  // Handle click
+  function handleClick(e) {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const ctx = canvasRef.current.getContext('2d');
+    const data = ctx.getImageData(x, y, 1, 1).data;
+    const color = `#${[data[0], data[1], data[2]].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+    onPick(color);
+  }
+  // Handle live preview
+  function handleMouseMove(e) {
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const ctx = canvasRef.current.getContext('2d');
+    const data = ctx.getImageData(x, y, 1, 1).data;
+    const color = `#${[data[0], data[1], data[2]].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+    setPreviewColor(color);
+  }
+  function handleMouseLeave() {
+    setPreviewColor(null);
+  }
+  return (
+    <div style={{ position: 'relative', width }}>
+      <canvas
+        ref={canvasRef}
+        width={width}
+        height={height}
+        style={{
+          borderRadius: 12,
+          cursor: 'crosshair',
+          boxShadow: '0 2px 12px #0006',
+          margin: '0 0 8px 0',
+          display: 'block',
+        }}
+        onClick={handleClick}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      />
+      {/* Live preview swatch */}
+      <div style={{
+        position: 'absolute',
+        top: '50%',
+        right: -48,
+        transform: 'translateY(-50%)',
+        width: 36,
+        height: 36,
+        borderRadius: '50%',
+        background: previewColor || undefined,
+        border: '2.5px solid #fff',
+        boxShadow: '0 2px 8px #0004',
+        transition: 'background 0.15s',
+        display: previewColor ? 'block' : 'none',
+      }} />
+    </div>
+  );
+}
+
 export default App; 
